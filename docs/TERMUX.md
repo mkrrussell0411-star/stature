@@ -56,6 +56,23 @@ pkg install -y nodejs-lts curl unzip tar golang which
 bash scripts/termux-install.sh
 ```
 
+## `Story format search directories not found`
+
+Tweego built **from Go on arm64** does not ship `storyformats/`. Fix:
+
+```bash
+cd ~/stature
+npm install          # re-runs bootstrap; installs formats + SugarCube 2.37
+npm run build
+```
+
+Or set paths manually after `npm install`:
+
+```bash
+export TWEEGO_PATH="$HOME/stature/vendor/tweego/storyformats:$HOME/stature/vendor/storyformats"
+npm run build
+```
+
 ## Play
 
 - Offline: `~/stature/dist/index.html` in a browser after `npm run build`

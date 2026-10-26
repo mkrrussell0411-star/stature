@@ -73,6 +73,21 @@ try_termux_pkg_tweego() {
   command -v tweego >/dev/null 2>&1
 }
 
+# Source-built (go) tweego has no bundled formats; pkg symlinks also miss vendor/tweego/storyformats.
+ensure_tweego_storyformats() {
+  local marker="$ROOT/vendor/tweego/storyformats/sugarcube-2/format.js"
+  if [[ -f "$marker" ]]; then
+    return 0
+  fi
+  echo "Installing Tweego storyformats bundle (needed beside source-built tweego)…"
+  ensure_unzip
+  mkdir -p "$ROOT/vendor/tweego"
+  download_file \
+    "https://github.com/tmedwards/tweego/releases/download/${TWEEGO_TAG}/tweego-${TWEEGO_VERSION}-linux-x64.zip" \
+    "$TMP/tweego-formats.zip"
+  unzip -o -q "$TMP/tweego-formats.zip" "storyformats/*" -d "$ROOT/vendor/tweego/"
+}
+
 install_sugarcube() {
   mkdir -p "$STORY_FORMATS"
   ensure_unzip
@@ -149,36 +164,33 @@ install_tweego_from_custom_binary() {
 }
 
 install_tweego() {
-  if [[ -x "$TWEEGO_BIN" ]]; then
-    return 0
+  if [[ ! -x "$TWEEGO_BIN" ]]; then
+    if try_termux_pkg_tweego; then
+      mkdir -p "$(dirname "$TWEEGO_BIN")"
+      ln -sf "$(command -v tweego)" "$TWEEGO_BIN"
+    elif install_tweego_from_custom_binary; then
+      :
+    else
+      case "$(arch)" in
+        x86_64|amd64)
+          install_tweego_from_zip "tweego-${TWEEGO_VERSION}-linux-x64.zip"
+          ;;
+        i686|i386)
+          install_tweego_from_zip "tweego-${TWEEGO_VERSION}-linux-x86.zip"
+          ;;
+        aarch64|arm64)
+          echo "Building Tweego from source for $(arch) (curl + tar, no git clone)…"
+          install_tweego_from_go
+          ;;
+        *)
+          echo "Unsupported CPU $(arch); set STATURE_TWEEGO_BIN_URL or install tweego and link to $TWEEGO_BIN" >&2
+          exit 1
+          ;;
+      esac
+    fi
   fi
 
-  if try_termux_pkg_tweego; then
-    mkdir -p "$(dirname "$TWEEGO_BIN")"
-    ln -sf "$(command -v tweego)" "$TWEEGO_BIN"
-    return 0
-  fi
-
-  if install_tweego_from_custom_binary; then
-    return 0
-  fi
-
-  case "$(arch)" in
-    x86_64|amd64)
-      install_tweego_from_zip "tweego-${TWEEGO_VERSION}-linux-x64.zip"
-      ;;
-    i686|i386)
-      install_tweego_from_zip "tweego-${TWEEGO_VERSION}-linux-x86.zip"
-      ;;
-    aarch64|arm64)
-      echo "Building Tweego from source for $(arch) (curl + tar, no git clone)…"
-      install_tweego_from_go
-      ;;
-    *)
-      echo "Unsupported CPU $(arch); set STATURE_TWEEGO_BIN_URL or install tweego and link to $TWEEGO_BIN" >&2
-      exit 1
-      ;;
-  esac
+  ensure_tweego_storyformats
 }
 
 install_tweego
