@@ -8,7 +8,7 @@ if ! command -v pkg >/dev/null 2>&1; then
 fi
 
 pkg update -y
-pkg install -y nodejs-lts git curl unzip golang which
+pkg install -y nodejs-lts curl unzip tar golang which
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
