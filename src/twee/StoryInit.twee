@@ -1,5 +1,4 @@
 :: StoryInit [script]
-<<script>>
 if (typeof StatureEngine !== "undefined") {
   setup.castDefaults = StatureEngine.castDefaults;
   setup.readerSettings = { intensityCapScale: 50, units: "metric", pacing: "steady", modules: { scale: true } };
@@ -8,7 +7,9 @@ if (typeof StatureEngine !== "undefined") {
   setup.focus = "mara";
 
   StatureEngine.mountEngine(setup, {
-    getFocus: () => State.variables.focus,
+    getFocus: function () {
+      return State.variables.focus;
+    },
   });
 
   setup.engine.loadCharacter({ name: "Mara", id: "mara" }, "mara");
@@ -31,4 +32,3 @@ if (typeof StatureEngine !== "undefined") {
   State.variables.scrubIndex = -1;
   State.variables.lastCard = "";
 }
-<</script>>
