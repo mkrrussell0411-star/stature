@@ -39,15 +39,24 @@ ensure_tar() {
   }
 }
 
-ensure_curl() {
-  command -v curl >/dev/null 2>&1 || {
-    if is_termux; then
-      pkg install -y curl
-    else
-      echo "curl is required" >&2
-      exit 1
-    fi
-  }
+download_file() {
+  local url="$1"
+  local dest="$2"
+  if command -v curl >/dev/null 2>&1 && curl -fsSL -o "$dest" "$url" 2>/dev/null; then
+    return 0
+  fi
+  if command -v wget >/dev/null 2>&1 && wget -q -O "$dest" "$url" 2>/dev/null; then
+    return 0
+  fi
+  if command -v node >/dev/null 2>&1 && [[ -f "$ROOT/scripts/https-download.mjs" ]]; then
+    node "$ROOT/scripts/https-download.mjs" "$url" "$dest"
+    return 0
+  fi
+  echo "Need curl, wget, or node to download: $url" >&2
+  if is_termux; then
+    echo "Termux: fix pkg (pkg reinstall curl libngtcp2) or use node scripts/termux-node-sync.mjs first." >&2
+  fi
+  exit 1
 }
 
 try_termux_pkg_tweego() {
@@ -66,10 +75,10 @@ try_termux_pkg_tweego() {
 
 install_sugarcube() {
   mkdir -p "$STORY_FORMATS"
-  ensure_curl
   ensure_unzip
-  curl -fsSL -o "$TMP/sc.zip" \
-    "https://github.com/tmedwards/sugarcube-2/releases/download/v2.37.3/sugarcube-2.37.3-for-twine-2.1-local.zip"
+  download_file \
+    "https://github.com/tmedwards/sugarcube-2/releases/download/v2.37.3/sugarcube-2.37.3-for-twine-2.1-local.zip" \
+    "$TMP/sc.zip"
   unzip -o -q "$TMP/sc.zip" -d "$STORY_FORMATS"
   mkdir -p "$ROOT/vendor/tweego/storyformats/sugarcube-2"
   cp "$STORY_FORMATS/sugarcube-2/format.js" \
@@ -78,11 +87,11 @@ install_sugarcube() {
 
 install_tweego_from_zip() {
   local zip_name="$1"
-  ensure_curl
   ensure_unzip
   mkdir -p "$ROOT/vendor/tweego"
-  curl -fsSL -o "$TMP/tweego.zip" \
-    "https://github.com/tmedwards/tweego/releases/download/${TWEEGO_TAG}/${zip_name}"
+  download_file \
+    "https://github.com/tmedwards/tweego/releases/download/${TWEEGO_TAG}/${zip_name}" \
+    "$TMP/tweego.zip"
   unzip -o -q "$TMP/tweego.zip" -d "$ROOT/vendor/tweego"
   chmod +x "$ROOT/vendor/tweego/tweego" 2>/dev/null || true
   if [[ ! -x "$TWEEGO_BIN" ]]; then
@@ -94,14 +103,14 @@ install_tweego_from_zip() {
 fetch_tweego_source_dir() {
   local out_dir="$TMP/tweego-${TWEEGO_VERSION}"
   rm -rf "$out_dir"
-  ensure_curl
   ensure_tar
   local archive="$TMP/tweego-${TWEEGO_VERSION}.tar.gz"
   if [[ -n "${STATURE_TWEEGO_SOURCE_URL:-}" ]]; then
-    curl -fsSL -o "$archive" "$STATURE_TWEEGO_SOURCE_URL"
+    download_file "$STATURE_TWEEGO_SOURCE_URL" "$archive"
   else
-    curl -fsSL -o "$archive" \
-      "https://github.com/tmedwards/tweego/archive/refs/tags/${TWEEGO_TAG}.tar.gz"
+    download_file \
+      "https://github.com/tmedwards/tweego/archive/refs/tags/${TWEEGO_TAG}.tar.gz" \
+      "$archive"
   fi
   tar -xzf "$archive" -C "$TMP"
   # GitHub archive top-level folder: tweego-2.1.1
@@ -134,9 +143,8 @@ install_tweego_from_custom_binary() {
   if [[ -z "${STATURE_TWEEGO_BIN_URL:-}" ]]; then
     return 1
   fi
-  ensure_curl
   mkdir -p "$(dirname "$TWEEGO_BIN")"
-  curl -fsSL -o "$TWEEGO_BIN" "$STATURE_TWEEGO_BIN_URL"
+  download_file "$STATURE_TWEEGO_BIN_URL" "$TWEEGO_BIN"
   chmod +x "$TWEEGO_BIN"
 }
 

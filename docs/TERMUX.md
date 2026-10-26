@@ -1,96 +1,70 @@
 # Stature on Termux (Android)
 
-Stature runs on Termux with Node.js. Tweego has no official ARM64 Linux binary, so on `aarch64` the bootstrap script **downloads the Tweego source as a `.tar.gz` with curl** (no `git clone`) and compiles it with Go.
+## Broken `curl` / `git` (ngtcp2 symbol error)
 
-## One-shot setup (no git)
+If **even `curl` fails** with `ngtcp2_crypto_get_path_challenge_data2_cb`, Termux’s curl package is broken. **Node’s HTTPS still works** on most installs.
 
-If `git pull` / `git clone` fails with `ngtcp2` / `git-remote-https`, use **curl only**:
+### Fix Termux (try first)
 
 ```bash
 pkg update -y && pkg upgrade -y
-pkg install -y nodejs-lts curl unzip tar golang which
-curl -fsSL https://raw.githubusercontent.com/mkrrussell0411-star/stature/main/scripts/termux-curl-install.sh | bash
-```
-
-That downloads `main` from GitHub, merges into `~/stature`, runs `npm install`, and builds `dist/index.html`.
-
-Or manually:
-
-```bash
-npm install   # runs scripts/bootstrap-tools.sh
-npm test
-npm run build
-npm run dev
-```
-
-Open `http://127.0.0.1:4321` in Chrome/Firefox on the device.
-
-## If `git` / `curl` breaks (ngtcp2 symbol error)
-
-Some Termux installs hit:
-
-```text
-git-remote-https … cannot locate symbol "ngtcp2_crypto_get_path_challenge_data2_cb"
-```
-
-That is a **broken git ↔ curl/libngtcp2 pairing**. Stature’s bootstrap **does not use git** for Tweego anymore—only **curl + tar + go build**.
-
-Still fix the system for your own `git clone` / `git pull`:
-
-```bash
-pkg update -y
+pkg reinstall curl libngtcp2
+# or full refresh:
 pkg upgrade -y
-pkg install -y curl libngtcp2 git
-# if it persists:
-pkg reinstall curl libngtcp2 git
 ```
 
-Then clone again—or **avoid git entirely** for updates (below).
+### Install / update Stature with Node only (no curl, no git)
 
-### Update without `git pull`
+Requires **Node** (`pkg install -y nodejs-lts tar unzip golang which`).
 
-When HTTPS git is broken, sync latest `main` with **curl + tar only**:
+**If you already have `~/stature` with `scripts/termux-node-sync.mjs`:**
 
 ```bash
 cd ~/stature
-curl -fsSL -o /tmp/stature-main.tar.gz \
-  https://github.com/mkrrussell0411-star/stature/archive/refs/heads/main.tar.gz
-tar -xzf /tmp/stature-main.tar.gz -C /tmp
-rsync -a --exclude node_modules --exclude vendor --exclude .git \
-  /tmp/stature-main/ ~/stature/
+node scripts/termux-node-sync.mjs
 npm install
 npm run build
 ```
 
-Or use the helper script (after you have at least one copy of the repo):
+**If you have nothing yet** — paste this whole block in Termux (downloads repo via Node, then builds):
 
 ```bash
-bash scripts/termux-sync-from-github.sh
+mkdir -p ~/stature && cd ~/stature
+node <<'NODE'
+const https=require("https"),fs=require("fs"),{execSync}=require("child_process"),os=require("os"),path=require("path");
+const home=os.homedir(),root=path.join(home,"stature"),tmp=os.tmpdir(),arc=path.join(tmp,"st-main.tar.gz"),ex=path.join(tmp,"st-ex");
+const url="https://github.com/mkrrussell0411-star/stature/archive/refs/heads/main.tar.gz";
+function get(u,cb){https.get(u,r=>{if(r.statusCode>=300&&r.statusCode<400&&r.headers.location)return get(new URL(r.headers.location,u).href,cb);const w=fs.createWriteStream(arc);r.pipe(w);w.on("finish",cb);}).on("error",e=>{console.error(e);process.exit(1);});}
+get(url,()=>{try{execSync(`rm -rf "${ex}" && mkdir -p "${ex}" && tar -xzf "${arc}" -C "${ex}"`);const src=path.join(ex,"stature-main");for(const n of fs.readdirSync(src)){if(["node_modules","vendor"].includes(n))continue;execSync(`rm -rf "${root}/${n}" 2>/dev/null; cp -a "${src}/${n}" "${root}/"`);}console.log("Synced to",root);}catch(e){console.error(e);process.exit(1);}});
+NODE
 npm install
+npm run build
 ```
 
-If `rsync` is missing: `pkg install -y rsync`.
+After that, future updates:
 
-## Tweego without compiling
+```bash
+cd ~/stature && node scripts/termux-node-sync.mjs && npm install && npm run build
+```
 
-1. **Termux package** (if available): `pkg install -y tweego` — bootstrap symlinks it automatically.
-2. **Prebuilt binary URL**: set before `npm install`:
+`npm install` uses **Node HTTPS** for Tweego/SugarCube downloads when curl is broken (see `scripts/https-download.mjs`).
 
-   ```bash
-   export STATURE_TWEEGO_BIN_URL='file:///path/to/tweego'
-   npm install
-   ```
+## Normal setup (working curl)
 
-## Tips
+```bash
+pkg install -y nodejs-lts curl unzip tar golang which
+bash scripts/termux-install.sh
+```
 
-- Keep the project under Termux home (e.g. `~/stature`), not shared storage, for executable permissions.
-- If `go build` fails, run `pkg upgrade golang` and retry `npm install`.
-- Play offline: copy `dist/index.html` anywhere after `npm run build`.
+## Play
+
+- Offline: `~/stature/dist/index.html` in a browser after `npm run build`
+- Local server: `npm run dev` → http://127.0.0.1:4321
 
 ## Environment variables
 
 | Variable | Purpose |
 | --- | --- |
-| `TMPDIR` | Temp dir for downloads (defaults to `/tmp`) |
-| `STATURE_TWEEGO_BIN_URL` | Direct download URL (or `file://`) for a `tweego` executable |
-| `STATURE_TWEEGO_SOURCE_URL` | Override Tweego source tarball URL (default: GitHub tag archive) |
+| `STATURE_ROOT` | Install dir (default `~/stature`) |
+| `STATURE_TWEEGO_BIN_URL` | Prebuilt tweego binary URL or `file://` path |
+| `STATURE_TWEEGO_SOURCE_URL` | Override Tweego source tarball URL |
