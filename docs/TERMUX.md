@@ -2,15 +2,17 @@
 
 Stature runs on Termux with Node.js. Tweego has no official ARM64 Linux binary, so on `aarch64` the bootstrap script **downloads the Tweego source as a `.tar.gz` with curl** (no `git clone`) and compiles it with Go.
 
-## One-shot setup
+## One-shot setup (no git)
+
+If `git pull` / `git clone` fails with `ngtcp2` / `git-remote-https`, use **curl only**:
 
 ```bash
-pkg update -y
-pkg upgrade -y
+pkg update -y && pkg upgrade -y
 pkg install -y nodejs-lts curl unzip tar golang which
-git clone https://github.com/mkrrussell0411-star/stature.git && cd stature
-bash scripts/install-termux.sh
+curl -fsSL https://raw.githubusercontent.com/mkrrussell0411-star/stature/main/scripts/termux-curl-install.sh | bash
 ```
+
+That downloads `main` from GitHub, merges into `~/stature`, runs `npm install`, and builds `dist/index.html`.
 
 Or manually:
 

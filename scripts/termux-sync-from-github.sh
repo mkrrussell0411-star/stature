@@ -1,51 +1,49 @@
 #!/usr/bin/env bash
-# Update a Stature checkout without git (for Termux when git-remote-https is broken).
+# Update Stature without git (Termux when git-remote-https / libngtcp2 is broken).
 set -euo pipefail
 
 REPO="${STATURE_GITHUB_REPO:-mkrrussell0411-star/stature}"
 BRANCH="${STATURE_GITHUB_BRANCH:-main}"
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="${STATURE_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 TMP="${TMPDIR:-/tmp}"
 ARCHIVE="$TMP/stature-${BRANCH}.tar.gz"
-EXTRACT="$TMP/stature-sync-${BRANCH}-$$"
+EXTRACT="$TMP/stature-extract-$$"
+NM_BACKUP="$TMP/stature-nm-$$"
+VENDOR_BACKUP="$TMP/stature-vendor-$$"
 
 cleanup() {
-  rm -rf "$EXTRACT"
+  rm -rf "$EXTRACT" "$ARCHIVE"
+  rm -rf "$NM_BACKUP" "$VENDOR_BACKUP"
 }
 trap cleanup EXIT
 
-if ! command -v curl >/dev/null 2>&1; then
-  echo "curl is required (pkg install curl)" >&2
-  exit 1
-fi
-if ! command -v tar >/dev/null 2>&1; then
-  echo "tar is required (pkg install tar)" >&2
-  exit 1
-fi
+command -v curl >/dev/null 2>&1 || { echo "pkg install -y curl" >&2; exit 1; }
+command -v tar >/dev/null 2>&1 || { echo "pkg install -y tar" >&2; exit 1; }
 
-echo "Downloading https://github.com/${REPO}/archive/refs/heads/${BRANCH}.tar.gz"
+mkdir -p "$ROOT"
+
+echo "Downloading github.com/${REPO} (${BRANCH})…"
 curl -fsSL -o "$ARCHIVE" \
   "https://github.com/${REPO}/archive/refs/heads/${BRANCH}.tar.gz"
 
 mkdir -p "$EXTRACT"
 tar -xzf "$ARCHIVE" -C "$EXTRACT"
 SRC="$EXTRACT/stature-${BRANCH}"
-if [[ ! -d "$SRC" ]]; then
-  echo "Unexpected archive layout (missing stature-${BRANCH}/)" >&2
-  exit 1
-fi
+[[ -d "$SRC" ]] || { echo "Bad archive layout" >&2; exit 1; }
 
-if command -v rsync >/dev/null 2>&1; then
-  rsync -a --delete \
-    --exclude node_modules/ \
-    --exclude vendor/ \
-    --exclude .git/ \
-    "$SRC/" "$ROOT/"
-else
-  echo "rsync not found; using cp (install rsync for cleaner sync: pkg install rsync)" >&2
-  find "$ROOT" -mindepth 1 -maxdepth 1 ! -name node_modules ! -name vendor ! -name .git -exec rm -rf {} +
-  cp -a "$SRC"/. "$ROOT/"
-fi
+[[ -d "$ROOT/node_modules" ]] && mv "$ROOT/node_modules" "$NM_BACKUP"
+[[ -d "$ROOT/vendor" ]] && mv "$ROOT/vendor" "$VENDOR_BACKUP"
 
-echo "Synced into $ROOT"
-echo "Run: npm install && npm test && npm run build"
+echo "Merging into $ROOT …"
+for entry in "$SRC"/* "$SRC"/.[!.]* "$SRC"/..?*; do
+  [[ -e "$entry" ]] || continue
+  base="$(basename "$entry")"
+  [[ "$base" == ".git" ]] && continue
+  rm -rf "$ROOT/$base"
+  cp -a "$entry" "$ROOT/$base"
+done
+
+[[ -d "$NM_BACKUP" ]] && mv "$NM_BACKUP" "$ROOT/node_modules"
+[[ -d "$VENDOR_BACKUP" ]] && mv "$VENDOR_BACKUP" "$ROOT/vendor"
+
+echo "Done. Next: cd $ROOT && npm install && npm run build"
