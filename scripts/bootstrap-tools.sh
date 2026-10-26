@@ -196,4 +196,8 @@ install_tweego() {
 install_tweego
 install_sugarcube
 
+if [[ -f "$ROOT/scripts/ensure-storyformats.mjs" ]] && [[ ! -f "$ROOT/vendor/tweego/storyformats/sugarcube-2/format.js" ]]; then
+  node "$ROOT/scripts/ensure-storyformats.mjs"
+fi
+
 echo "Tweego: $($TWEEGO_BIN -v 2>&1 | head -1)"

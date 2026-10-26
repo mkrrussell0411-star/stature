@@ -9,6 +9,7 @@
     "build:engine": "node scripts/build-engine.mjs",
     "build:story": "bash scripts/build-story.sh",
     "build": "npm run build:engine && npm run build:story",
+    "setup:formats": "node scripts/ensure-storyformats.mjs",
     "test": "node --test $(find tests -name '*.test.js' | sort)",
     "dev": "npm run build && npx --yes serve dist -l 4321"
   },

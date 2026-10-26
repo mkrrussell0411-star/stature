@@ -58,19 +58,25 @@ bash scripts/termux-install.sh
 
 ## `Story format search directories not found`
 
-Tweego built **from Go on arm64** does not ship `storyformats/`. Fix:
+Tweego built **from Go on arm64** does not ship `storyformats/`. Create them with **Node only**:
 
 ```bash
 cd ~/stature
-npm install          # re-runs bootstrap; installs formats + SugarCube 2.37
+node scripts/ensure-storyformats.mjs
+export TWEEGO_PATH="$HOME/stature/vendor/tweego/storyformats:$HOME/stature/vendor/storyformats"
+vendor/tweego/tweego --list-formats | grep sugarcube
 npm run build
 ```
 
-Or set paths manually after `npm install`:
+If `ensure-storyformats.mjs` is missing (old tree), download it with Node then run:
 
 ```bash
+cd ~/stature
+mkdir -p scripts
+node -e "const h=require('https'),f=require('fs');h.get('https://raw.githubusercontent.com/mkrrussell0411-star/stature/main/scripts/ensure-storyformats.mjs',r=>{let b='';r.on('data',c=>b+=c);r.on('end',()=>f.writeFileSync('scripts/ensure-storyformats.mjs',b));});"
+node scripts/ensure-storyformats.mjs
 export TWEEGO_PATH="$HOME/stature/vendor/tweego/storyformats:$HOME/stature/vendor/storyformats"
-npm run build
+vendor/tweego/tweego --list-formats
 ```
 
 ## Play
