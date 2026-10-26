@@ -1,34 +1,57 @@
 # Stature
 
-Adult-only, browser-based branching fiction where **numeric character state** drives every measurement, comparison, and size word. Built with **SugarCube 2.37** and **Tweego**.
+Adult-only, browser-based branching size fiction where **numeric character state** is the source of truth. Built with **SugarCube 2.37** and **Tweego**, with a Node-testable engine and optional AI/image backend hooks.
 
-## Phase 1 (current)
+## Features (build spec phases)
 
-- Body state engine in `src/js/engine/` (Node-testable)
-- Scale module with stages and reference objects
-- Minimal Twee demo with age gate and growth buttons
-- Compiled output in `dist/index.html`
+| Phase | Scope | Status |
+| --- | --- | --- |
+| 1 | Body state engine (`apply`, derive, ledger, compare, curves) | Done |
+| 2 | Text templates (`?h`, bands, units, anti-repetition, `<<sz>>`) | Done |
+| 3 | Storylets, `setup.req`, threshold deck, pacing dial | Done |
+| 4 | SVG scene panel, ledger scrubber, PNG export API | Done |
+| 5 | Reader settings, template sweep, crawler config, AI validate stub | Done |
 
-## Commands
+Optional **ComfyUI / LLM server** is documented in [`server/README.md`](server/README.md) (not required to play).
+
+## Quick start (Linux / macOS / Cloud Agent)
 
 ```bash
 npm install
 npm test
 npm run build
-npm run dev    # serves dist/ on port 4321
+npm run dev    # http://127.0.0.1:4321
+```
+
+Output: [`dist/index.html`](dist/index.html)
+
+## Termux (Android)
+
+See [`docs/TERMUX.md`](docs/TERMUX.md). ARM64 builds Tweego from source via Go during `npm install`.
+
+```bash
+bash scripts/install-termux.sh
 ```
 
 ## Layout
 
 ```
-src/
-  twee/           Passages and story bootstrap
-  js/engine/      Sheet, apply, derive, ledger, compare
-  js/modules/     Fetish/stat modules (scale first)
-tests/engine/     Unit tests
-dist/             Compiled HTML (generated)
+src/js/engine/     State pipeline
+src/js/text/       Templates and units
+src/js/storylets/  Cards, thresholds, pacing
+src/js/ui/         Scene panel and settings
+src/js/ai/         Offline passage validator (for future LLM layer)
+src/twee/          Story passages
+tests/             Unit tests + crawler config
+scripts/           Tweego bootstrap (portable / Termux-aware)
 ```
 
 ## Cloud Agent
 
-`.cursor/install.sh` runs `npm ci` and downloads Tweego/SugarCube into `vendor/`. Use `npm run dev` for a static preview of the compiled story.
+[`.cursor/environment.json`](.cursor/environment.json) runs `npm ci` and serves the built story on port **4321**.
+
+## Compliance
+
+- Cast loader requires `age >= 18`
+- Age gate passage on first load
+- Module/intensity filtering via reader settings

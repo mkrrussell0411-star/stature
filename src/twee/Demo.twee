@@ -3,14 +3,59 @@
   <<goto "AgeGate">>
 <</if>>
 
-<h2>Engine demo</h2>
-<p>Focus: <<print setup.cast[$focus].name>> — height <<print setup.engine.derive($focus).body.height_cm>> cm (scale ×<<print setup.engine.derive($focus).scale>>).</p>
+<div id="scene-panel"></div>
+<<run setup.engine.mountScenePanel(document.getElementById("scene-panel"), () => $onStage).redraw()>>
 
-<<button "Gentle growth (+5 cm)">>
+<h2>Engine demo</h2>
+<p><<do tag "size">><<print setup.engine.text.renderFocusLine()>><</do>></p>
+<p>Templates: <<print ?h>> · <<print ?size-word>> · <<print ?eye-ref>></p>
+<p>Jules: <<sz "jules" "eye">></p>
+
+<<set _d to setup.engine.derive($focus)>>
+<p>Stage: <<print _d.stages.scale>> · Scale ×<<print _d.scale>></p>
+
+<<button "Gentle (+5 cm)">>
   <<run setup.engine.apply($focus, { height_cm: 5 }, "demo-growth")>>
+  <<run setup.engine.mountScenePanel(document.getElementById("scene-panel"), () => $onStage).redraw()>>
+  <<redo "size">>
 <</button>>
 <<button "Surge (+40 cm)">>
   <<run setup.engine.apply($focus, { height_cm: 40 }, "demo-surge")>>
+  <<run setup.engine.mountScenePanel(document.getElementById("scene-panel"), () => $onStage).redraw()>>
+  <<redo "size">>
 <</button>>
 
+<h3>Pacing dial</h3>
+<<button "Gentle pacing">><<run setup.engine.applyPacing($focus, "gentle")>><</button>>
+<<button "Steady pacing">><<run setup.engine.applyPacing($focus, "steady")>><</button>>
+<<button "Surge pacing">><<run setup.engine.applyPacing($focus, "surge")>><</button>>
+<<button "Tick growth">>
+  <<run setup.engine.tickGrowth($focus, 1, "linear")>>
+  <<run setup.engine.mountScenePanel(document.getElementById("scene-panel"), () => $onStage).redraw()>>
+  <<redo "size">>
+<</button>>
+
+<h3>Threshold deck</h3>
+<<set _events to setup.engine.drainEventQueue()>>
+<<if _events.length>>
+  <<for _e range _events>>
+    <p class="threshold-event">Threshold: <<print _e.cardId>> (<<print _e.charId>>)</p>
+  <</for>>
+<</if>>
+<<set _card to setup.engine.drawStorylet()>>
+<<if _card>>
+  <<set $lastCard to _card.prose>>
+  <blockquote><<print $lastCard>></blockquote>
+  <<run setup.cardsPlayed.add(_card.id)>>
+<</if>>
+
+<h3>Timeline scrubber</h3>
+<label>Ledger replay (read-only): <<print $scrubIndex + 1>> / <<print setup.ledger.length>>
+  <<textbox "$scrubIndex" $scrubIndex>><<button "Scrub">>
+    <<run setup.engine.mountScenePanel(document.getElementById("scene-panel"), () => $onStage).redraw()>>
+  <</button>>
+</label>
+<div id="scrub-svg"><<= setup.engine.sceneSvg($onStage, $scrubIndex >= 0 ? $scrubIndex : null)>></div>
+
+<<link "Settings" "Settings">>
 <<link "Replay age gate" "AgeGate">>

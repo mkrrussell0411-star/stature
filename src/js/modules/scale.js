@@ -18,8 +18,37 @@ export const scaleModule = {
     ],
   },
   defaultRefs: [
-    { id: "door", h: 2.0, phrase: "the top of a doorframe" },
-    { id: "ceiling", h: 2.4, phrase: "a typical ceiling" },
-    { id: "sedan", h: 1.45, phrase: "a car roofline" },
+    {
+      id: "door",
+      h: 2.0,
+      phrase: "the top of a doorframe",
+      thresholdCard: "threshold-door",
+    },
+    {
+      id: "ceiling",
+      h: 2.4,
+      phrase: "a typical ceiling",
+      thresholdCard: "threshold-ceiling",
+    },
+    {
+      id: "sedan",
+      h: 1.45,
+      phrase: "a car roofline",
+      thresholdCard: "threshold-car",
+    },
+  ],
+  defaultCards: [
+    {
+      id: "threshold-door",
+      tags: ["req-heightAboveDoor", "once"],
+      modules: ["scale"],
+      prose: "[pov-big]You stop ducking and start *seeing* doorframes.[pov-small]",
+    },
+    {
+      id: "threshold-ceiling",
+      tags: ["req-eyeAboveCeiling", "once", "settle"],
+      modules: ["scale"],
+      prose: "Your eye line finds the ceiling—and keeps going.",
+    },
   ],
 };

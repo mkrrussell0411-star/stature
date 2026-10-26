@@ -2,16 +2,33 @@
 <<script>>
 if (typeof StatureEngine !== "undefined") {
   setup.castDefaults = StatureEngine.castDefaults;
-  setup.readerSettings = { intensityCapScale: 50, units: "metric" };
+  setup.readerSettings = { intensityCapScale: 50, units: "metric", pacing: "steady", modules: { scale: true } };
   setup.ledger = [];
   setup.cast = {};
-  StatureEngine.mountEngine(setup);
+  setup.focus = "mara";
+
+  StatureEngine.mountEngine(setup, {
+    getFocus: () => State.variables.focus,
+  });
+
   setup.engine.loadCharacter({ name: "Mara", id: "mara" }, "mara");
   setup.engine.loadCharacter(
     { name: "Jules", baseline: { height_cm: 180, mass_kg: 72 }, stats: { height_cm: 180, mass_kg: 72 } },
     "jules",
   );
+
+  setup.engine.installSugarCube(Template, Macro, Setting, {
+    onSettingChange: function () {
+      if (State.variables.focus) {
+        setup.engine.applyPacing(State.variables.focus, setup.readerSettings.pacing);
+      }
+    },
+  });
+
   State.variables.focus = "mara";
   State.variables.ageVerified = false;
+  State.variables.onStage = ["mara", "jules"];
+  State.variables.scrubIndex = -1;
+  State.variables.lastCard = "";
 }
 <</script>>

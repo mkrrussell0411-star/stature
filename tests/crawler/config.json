@@ -1,0 +1,7 @@
+{
+  "description": "Branch crawler config for twine-play-mcp (future). Assert size tokens in passages match engine state.",
+  "storyHtml": "dist/index.html",
+  "sampleHeightsCm": [170, 200, 340, 600, 1200],
+  "forbiddenAgeTerms": ["teen", "underage", "child", "minor"],
+  "maxPassagesPerRun": 200
+}
