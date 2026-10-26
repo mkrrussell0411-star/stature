@@ -1,0 +1,8 @@
+:: StoryData
+{
+  "ifid": "A1B2C3D4-E5F6-4780-8000-000000000001",
+  "format": "SugarCube",
+  "format-version": "2.37.3",
+  "start": "AgeGate",
+  "zoom": 1
+}

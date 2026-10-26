@@ -1,0 +1,17 @@
+:: StoryStylesheet [stylesheet]
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  max-width: 42rem;
+  margin: 2rem auto;
+  line-height: 1.5;
+}
+
+.age-gate {
+  border: 1px solid #ccc;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+button {
+  margin: 0.25rem 0.5rem 0.25rem 0;
+}

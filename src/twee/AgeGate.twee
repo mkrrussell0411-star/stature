@@ -1,0 +1,14 @@
+:: AgeGate
+<div class="age-gate">
+  <h1>Stature</h1>
+  <p>This interactive story is for adults only. All characters are 18 or older.</p>
+  <<if !$ageVerified>>
+    <p>Confirm you are at least 18 to continue.</p>
+    <<button "I am 18 or older">>
+      <<set $ageVerified to true>>
+      <<goto "Demo">>
+    <</button>>
+  <<else>>
+    <<goto "Demo">>
+  <</if>>
+</div>

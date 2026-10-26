@@ -1,0 +1,16 @@
+:: Demo
+<<if !$ageVerified>>
+  <<goto "AgeGate">>
+<</if>>
+
+<h2>Engine demo</h2>
+<p>Focus: <<print setup.cast[$focus].name>> — height <<print setup.engine.derive($focus).body.height_cm>> cm (scale ×<<print setup.engine.derive($focus).scale>>).</p>
+
+<<button "Gentle growth (+5 cm)">>
+  <<run setup.engine.apply($focus, { height_cm: 5 }, "demo-growth")>>
+<</button>>
+<<button "Surge (+40 cm)">>
+  <<run setup.engine.apply($focus, { height_cm: 40 }, "demo-surge")>>
+<</button>>
+
+<<link "Replay age gate" "AgeGate">>

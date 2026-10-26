@@ -1,0 +1,17 @@
+:: StoryInit [script]
+<<script>>
+if (typeof StatureEngine !== "undefined") {
+  setup.castDefaults = StatureEngine.castDefaults;
+  setup.readerSettings = { intensityCapScale: 50, units: "metric" };
+  setup.ledger = [];
+  setup.cast = {};
+  StatureEngine.mountEngine(setup);
+  setup.engine.loadCharacter({ name: "Mara", id: "mara" }, "mara");
+  setup.engine.loadCharacter(
+    { name: "Jules", baseline: { height_cm: 180, mass_kg: 72 }, stats: { height_cm: 180, mass_kg: 72 } },
+    "jules",
+  );
+  State.variables.focus = "mara";
+  State.variables.ageVerified = false;
+}
+<</script>>

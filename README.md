@@ -1,11 +1,34 @@
-# Project
+# Stature
 
-Greenfield repository for Cloud Agent development.
+Adult-only, browser-based branching fiction where **numeric character state** drives every measurement, comparison, and size word. Built with **SugarCube 2.37** and **Tweego**.
 
-## Local development
+## Phase 1 (current)
 
-When you add an application (for example with Next.js or Vite), commit a `package.json` and lockfile. The Cloud Agent environment will run `npm ci` (or `npm install`) automatically on each build.
+- Body state engine in `src/js/engine/` (Node-testable)
+- Scale module with stages and reference objects
+- Minimal Twee demo with age gate and growth buttons
+- Compiled output in `dist/index.html`
 
-## Cloud Agent environment
+## Commands
 
-Configuration lives in [`.cursor/environment.json`](.cursor/environment.json). The install script [`.cursor/install.sh`](.cursor/install.sh) installs Node dependencies when a `package.json` is present.
+```bash
+npm install
+npm test
+npm run build
+npm run dev    # serves dist/ on port 4321
+```
+
+## Layout
+
+```
+src/
+  twee/           Passages and story bootstrap
+  js/engine/      Sheet, apply, derive, ledger, compare
+  js/modules/     Fetish/stat modules (scale first)
+tests/engine/     Unit tests
+dist/             Compiled HTML (generated)
+```
+
+## Cloud Agent
+
+`.cursor/install.sh` runs `npm ci` and downloads Tweego/SugarCube into `vendor/`. Use `npm run dev` for a static preview of the compiled story.
