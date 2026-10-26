@@ -5,7 +5,7 @@
  * @param {(key: string, value: unknown) => void} onChange
  */
 export function registerReaderSettings(Setting, setup, onChange) {
-  if (!Setting?.add) return;
+  if (!Setting?.addList) return;
 
   const rs = setup.readerSettings;
 
@@ -33,11 +33,11 @@ export function registerReaderSettings(Setting, setup, onChange) {
 
   Setting.addList("staturePacing", {
     label: "Pacing",
-    list: [
-      ["gentle", "Gentle"],
-      ["steady", "Steady"],
-      ["surge", "Surge"],
-    ],
+    list: {
+      gentle: "Gentle",
+      steady: "Steady",
+      surge: "Surge",
+    },
     default: rs.pacing ?? "steady",
     onChange(value) {
       rs.pacing = value;
@@ -47,11 +47,11 @@ export function registerReaderSettings(Setting, setup, onChange) {
 
   Setting.addList("statureUnits", {
     label: "Units",
-    list: [
-      ["metric", "Metric"],
-      ["imperial", "Imperial"],
-      ["relative", "Relative (storeys / cars)"],
-    ],
+    list: {
+      metric: "Metric",
+      imperial: "Imperial",
+      relative: "Relative (storeys / cars)",
+    },
     default: rs.units ?? "metric",
     onChange(value) {
       rs.units = value;
@@ -61,11 +61,11 @@ export function registerReaderSettings(Setting, setup, onChange) {
 
   Setting.addList("staturePov", {
     label: "POV default",
-    list: [
-      ["ask", "Ask each scene"],
-      ["big", "Bigger character"],
-      ["small", "Smaller character"],
-    ],
+    list: {
+      ask: "Ask each scene",
+      big: "Bigger character",
+      small: "Smaller character",
+    },
     default: rs.pov ?? "ask",
     onChange(value) {
       rs.pov = value;
@@ -84,11 +84,11 @@ export function registerReaderSettings(Setting, setup, onChange) {
 
   Setting.addList("statureImages", {
     label: "Images",
-    list: [
-      ["off", "Off"],
-      ["keyframes", "Keyframes"],
-      ["live", "Live (self-hosted)"],
-    ],
+    list: {
+      off: "Off",
+      keyframes: "Keyframes",
+      live: "Live (self-hosted)",
+    },
     default: rs.images ?? "keyframes",
     onChange(value) {
       rs.images = value;
