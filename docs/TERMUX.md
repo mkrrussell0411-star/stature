@@ -43,7 +43,31 @@ pkg install -y curl libngtcp2 git
 pkg reinstall curl libngtcp2 git
 ```
 
-Then clone again, or download the repo zip from GitHub in the browser and unzip into `~/stature`.
+Then clone again—or **avoid git entirely** for updates (below).
+
+### Update without `git pull`
+
+When HTTPS git is broken, sync latest `main` with **curl + tar only**:
+
+```bash
+cd ~/stature
+curl -fsSL -o /tmp/stature-main.tar.gz \
+  https://github.com/mkrrussell0411-star/stature/archive/refs/heads/main.tar.gz
+tar -xzf /tmp/stature-main.tar.gz -C /tmp
+rsync -a --exclude node_modules --exclude vendor --exclude .git \
+  /tmp/stature-main/ ~/stature/
+npm install
+npm run build
+```
+
+Or use the helper script (after you have at least one copy of the repo):
+
+```bash
+bash scripts/termux-sync-from-github.sh
+npm install
+```
+
+If `rsync` is missing: `pkg install -y rsync`.
 
 ## Tweego without compiling
 
