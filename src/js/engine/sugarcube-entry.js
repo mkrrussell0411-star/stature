@@ -8,6 +8,7 @@ import { drawCard, eligibleCards } from "../storylets/deck.js";
 import { applyPacingToSheet } from "../storylets/pacing.js";
 import { mountScenePanel, renderSceneSvg, snapshotAtLedgerIndex } from "../ui/scene-panel.js";
 import { registerReaderSettings } from "../ui/settings.js";
+import { installSugarCubeHooks, installUtilityMacros } from "../ui/sugarcube-hooks.js";
 
 /**
  * Full SugarCube bootstrap: engine, text, storylets, UI hooks.
@@ -142,7 +143,13 @@ export function mountEngine(setup, apis = {}) {
     installSugarCube(Template, Macro, Setting, hooks = {}) {
       installTemplates(Template, text);
       installSizeMacro(Macro, text);
-      registerReaderSettings(Setting, setup, hooks.onSettingChange ?? (() => {}));
+      installUtilityMacros(Macro, setup);
+      installSugarCubeHooks(setup);
+      try {
+        registerReaderSettings(Setting, setup, hooks.onSettingChange ?? (() => {}));
+      } catch (err) {
+        console.error("[Stature] settings registration failed:", err);
+      }
     },
   };
 

@@ -6,10 +6,15 @@ if (typeof StatureEngine !== "undefined") {
   setup.cast = {};
   setup.focus = "mara";
 
+  setup.getOnStage = function () {
+    return State.variables.onStage;
+  };
+  setup.getFocus = function () {
+    return State.variables.focus;
+  };
+
   StatureEngine.mountEngine(setup, {
-    getFocus: function () {
-      return State.variables.focus;
-    },
+    getFocus: setup.getFocus,
   });
 
   setup.engine.loadCharacter({ name: "Mara", id: "mara" }, "mara");

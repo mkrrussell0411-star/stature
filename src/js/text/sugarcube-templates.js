@@ -31,7 +31,7 @@ export function installSizeMacro(Macro, textEngine) {
         hand: () => textEngine.handRef(charId),
       };
       const fn = map[kind] ?? map.h;
-      $(this.output).wiki(fn());
+      $(this.output).append(document.createTextNode(fn()));
     },
   });
 }

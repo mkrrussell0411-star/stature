@@ -1,14 +1,13 @@
 :: Demo
-<<if !$ageVerified>>
+<<if not $ageVerified>>
   <<goto "AgeGate">>
 <</if>>
 
-<div id="scene-panel"></div>
-<<run setup.engine.mountScenePanel(document.getElementById("scene-panel"), () => $onStage).redraw()>>
+<div id="stature-scene-panel" class="stature-scene-host"></div>
 
 <h2>Engine demo</h2>
 <p><<do tag "size">><<print setup.engine.text.renderFocusLine()>><</do>></p>
-<p>Templates: <<print ?h>> · <<print ?size-word>> · <<print ?eye-ref>></p>
+<p>Templates: ?h · ?size-word · ?eye-ref</p>
 <p>Jules: <<sz "jules" "eye">></p>
 
 <<set _d to setup.engine.derive($focus)>>
@@ -16,28 +15,34 @@
 
 <<button "Gentle (+5 cm)">>
   <<run setup.engine.apply($focus, { height_cm: 5 }, "demo-growth")>>
-  <<run setup.engine.mountScenePanel(document.getElementById("scene-panel"), () => $onStage).redraw()>>
+  <<refreshScene>>
   <<redo "size">>
 <</button>>
 <<button "Surge (+40 cm)">>
   <<run setup.engine.apply($focus, { height_cm: 40 }, "demo-surge")>>
-  <<run setup.engine.mountScenePanel(document.getElementById("scene-panel"), () => $onStage).redraw()>>
+  <<refreshScene>>
   <<redo "size">>
 <</button>>
 
 <h3>Pacing dial</h3>
-<<button "Gentle pacing">><<run setup.engine.applyPacing($focus, "gentle")>><</button>>
-<<button "Steady pacing">><<run setup.engine.applyPacing($focus, "steady")>><</button>>
-<<button "Surge pacing">><<run setup.engine.applyPacing($focus, "surge")>><</button>>
+<<button "Gentle pacing">>
+  <<run setup.engine.applyPacing($focus, "gentle")>>
+<</button>>
+<<button "Steady pacing">>
+  <<run setup.engine.applyPacing($focus, "steady")>>
+<</button>>
+<<button "Surge pacing">>
+  <<run setup.engine.applyPacing($focus, "surge")>>
+<</button>>
 <<button "Tick growth">>
   <<run setup.engine.tickGrowth($focus, 1, "linear")>>
-  <<run setup.engine.mountScenePanel(document.getElementById("scene-panel"), () => $onStage).redraw()>>
+  <<refreshScene>>
   <<redo "size">>
 <</button>>
 
 <h3>Threshold deck</h3>
 <<set _events to setup.engine.drainEventQueue()>>
-<<if _events.length>>
+<<if _events.length gt 0>>
   <<for _e range _events>>
     <p class="threshold-event">Threshold: <<print _e.cardId>> (<<print _e.charId>>)</p>
   <</for>>
@@ -50,12 +55,12 @@
 <</if>>
 
 <h3>Timeline scrubber</h3>
-<label>Ledger replay (read-only): <<print $scrubIndex + 1>> / <<print setup.ledger.length>>
-  <<textbox "$scrubIndex" $scrubIndex>><<button "Scrub">>
-    <<run setup.engine.mountScenePanel(document.getElementById("scene-panel"), () => $onStage).redraw()>>
-  <</button>>
-</label>
-<div id="scrub-svg"><<= setup.engine.sceneSvg($onStage, $scrubIndex >= 0 ? $scrubIndex : null)>></div>
+<p>Ledger replay (read-only). Index <<print $scrubIndex>> (use −1 for live state).</p>
+<<textbox "$scrubIndex" $scrubIndex autofocus false>>
+<<button "Scrub">>
+  <<refreshScene>>
+<</button>>
+<<set _svg to setup.engine.sceneSvgForScrub($onStage, $scrubIndex)>>
+<div class="scrub-svg"><<= _svg>></div>
 
-<<link "Settings" "Settings">>
-<<link "Replay age gate" "AgeGate">>
+<p>[[Settings|Settings]] · [[Replay age gate|AgeGate]]</p>
