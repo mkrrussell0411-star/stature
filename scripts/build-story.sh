@@ -21,8 +21,8 @@ fi
 # Tell tweego where formats live (required for go-built binary and pkg symlinks).
 export TWEEGO_PATH="${TWEEGO_FORMATS}:${FORMATS}"
 
-if ! "$TWEEGO" --list-formats 2>/dev/null | grep -q sugarcube-2; then
-  echo "sugarcube-2 not found. Run: npm install" >&2
+if ! "$TWEEGO" --list-formats 2>&1 | grep -q 'sugarcube-2'; then
+  echo "sugarcube-2 not found. Run: npm run setup:formats" >&2
   "$TWEEGO" --list-formats 2>&1 || true
   exit 1
 fi
