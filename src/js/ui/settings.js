@@ -11,7 +11,7 @@ export function registerReaderSettings(Setting, setup, onChange) {
 
   const pacingLabels = ["Gentle", "Steady", "Surge"];
   const pacingKey = { Gentle: "gentle", Steady: "steady", Surge: "surge" };
-  const pacingLabel = { gentle: "Steady", steady: "Steady", surge: "Surge" };
+  const pacingLabel = { gentle: "Gentle", steady: "Steady", surge: "Surge" };
 
   const unitLabels = ["Metric", "Imperial", "Relative (storeys / cars)"];
   const unitKey = {
