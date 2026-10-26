@@ -121,7 +121,12 @@ install_tweego_from_go() {
   src="$(fetch_tweego_source_dir)"
   mkdir -p "$(dirname "$TWEEGO_BIN")"
   echo "Compiling Tweego ${TWEEGO_VERSION} from $src …"
-  (cd "$src" && CGO_ENABLED=0 go build -o "$TWEEGO_BIN")
+  (
+    cd "$src"
+    # Tag tarball may lack go.sum entries for newer Go toolchains (common on Termux).
+    go mod tidy
+    CGO_ENABLED=0 go build -o "$TWEEGO_BIN"
+  )
   chmod +x "$TWEEGO_BIN"
 }
 
